@@ -48,35 +48,12 @@ module "aks" {
   depends_on = [module.network]
 }
 
-module "monitoring" {
-  source = "../../modules/monitoring"
-
-  resource_group_name = module.network.resource_group_name
-  location           = "eastus"
-  environment        = "prod"
-}
-
-module "redis" {
-  source = "../../modules/redis"
-
-  resource_group_name = module.network.resource_group_name
-  location           = "eastus"
-  environment        = "prod"
-  
-  # Production-specific Redis settings
-  capacity            = 2
-  family              = "P"
-  sku_name            = "Premium"
-  enable_non_ssl_port = false
-}
-
 module "app" {
   source = "../../modules/app"
 
   resource_group_name = azurerm_resource_group.main.name
   location           = azurerm_resource_group.main.location
   environment        = var.environment
-  aks_cluster_name   = module.aks.cluster_name
 
   depends_on = [module.aks]
 } 
