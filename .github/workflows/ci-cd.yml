@@ -1,0 +1,115 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  ACR_NAME: cst8918acr62d8c5b4
+  ACR_LOGIN_SERVER: cst8918acr62d8c5b4.azurecr.io
+  TEST_ENVIRONMENT: test
+  PROD_ENVIRONMENT: prod
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        
+    - name: Install dependencies
+      run: |
+        cd app
+        npm install
+        
+    - name: Run tests
+      run: |
+        cd app
+        npm test
+        
+    - name: Run security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        
+  build-and-push:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+      
+    - name: Login to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.ACR_LOGIN_SERVER }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+        
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./app
+        push: true
+        tags: |
+          ${{ env.ACR_LOGIN_SERVER }}/weather-app:latest
+          ${{ env.ACR_LOGIN_SERVER }}/weather-app:${{ github.sha }}
+        
+  deploy-test:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: ${{ env.TEST_ENVIRONMENT }}
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: Deploy to Test
+      run: |
+        chmod +x deploy-test.sh
+        ./deploy-test.sh
+        
+    - name: Run integration tests
+      run: |
+        cd app
+        npm run test:integration
+        
+  deploy-prod:
+    needs: deploy-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: ${{ env.PROD_ENVIRONMENT }}
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: Deploy to Production
+      run: |
+        chmod +x deploy-prod.sh
+        ./deploy-prod.sh
+        
+    - name: Verify deployment
+      run: |
+        # Add health check script
+        ./scripts/verify-deployment.sh
+        
+    - name: Rollback on failure
+      if: failure()
+      run: |
+        # Add rollback script
+        ./scripts/rollback.sh # Updated CI/CD pipeline

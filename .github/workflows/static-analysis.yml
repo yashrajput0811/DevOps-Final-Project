@@ -1,0 +1,47 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.3.0"
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check
+        working-directory: ./terraform
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: ./terraform/environments/test
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+        working-directory: ./terraform/environments/test
+
+      - name: Install tfsec
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+      - name: Run tfsec
+        run: tfsec ./terraform --no-color
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/iac@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high 

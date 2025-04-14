@@ -1,0 +1,40 @@
+name: Deploy Application
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'app/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'app/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials --resource-group cst8918-final-project-group-1 --name cst8918-aks-test
+
+      - name: Deploy to AKS
+        run: |
+          kubectl set image deployment/weather-app weather-app=${{ secrets.ACR_LOGIN_SERVER }}/weather-app:${{ github.sha }} -n weather-app
+        if: github.event_name == 'pull_request'
+
+      - name: Deploy to Production
+        run: |
+          az aks get-credentials --resource-group cst8918-final-project-group-1 --name cst8918-aks-prod
+          kubectl set image deployment/weather-app weather-app=${{ secrets.ACR_LOGIN_SERVER }}/weather-app:${{ github.sha }} -n weather-app
+        if: github.event_name == 'push' 
