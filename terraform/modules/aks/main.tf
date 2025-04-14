@@ -7,6 +7,14 @@ terraform {
   }
 }
 
+resource "azurerm_log_analytics_workspace" "main" {
+  name                = "${var.cluster_name}-logs"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  sku                = "PerGB2018"
+  retention_in_days   = 30
+}
+
 resource "azurerm_kubernetes_cluster" "main" {
   name                = var.cluster_name
   location            = var.location
@@ -39,12 +47,7 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   azure_policy_enabled = true
 
-  monitor_metrics {
-    annotations_allowed = ["*"]
-    labels_allowed     = ["*"]
-  }
-
-  microsoft_defender {
+  oms_agent {
     log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
   }
 
@@ -55,14 +58,6 @@ resource "azurerm_kubernetes_cluster" "main" {
   tags = {
     Environment = var.environment
   }
-}
-
-resource "azurerm_log_analytics_workspace" "main" {
-  name                = "${var.cluster_name}-logs"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  sku                = "PerGB2018"
-  retention_in_days   = 30
 }
 
 resource "azurerm_role_assignment" "acr_pull" {
