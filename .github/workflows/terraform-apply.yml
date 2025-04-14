@@ -1,0 +1,151 @@
+name: Terraform Apply
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.3.0"
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Init Infrastructure
+        run: |
+          cd terraform/environments/test
+          terraform init -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+                        -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+                        -backend-config="key=terraform.tfstate" \
+                        -backend-config="access_key=${{ secrets.ACCESS_KEY }}"
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+      - name: Import Existing Resources
+        run: |
+          cd terraform/environments/test
+          # Function to check if resource exists in state
+          check_resource() {
+            terraform state list | grep -q "$1" || return 1
+          }
+          
+          # Import resources only if they don't exist in state
+          if ! check_resource "module.network.azurerm_virtual_network.main"; then
+            terraform import module.network.azurerm_virtual_network.main /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/cst8918-final-project-group-1/providers/Microsoft.Network/virtualNetworks/cst8918-vnet
+          fi
+          
+          # Import subnets
+          if ! check_resource "module.network.azurerm_subnet.prod"; then
+            terraform import module.network.azurerm_subnet.prod /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/cst8918-final-project-group-1/providers/Microsoft.Network/virtualNetworks/cst8918-vnet/subnets/prod-subnet
+          fi
+          
+          if ! check_resource "module.network.azurerm_subnet.test"; then
+            terraform import module.network.azurerm_subnet.test /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/cst8918-final-project-group-1/providers/Microsoft.Network/virtualNetworks/cst8918-vnet/subnets/test-subnet
+          fi
+          
+          if ! check_resource "module.network.azurerm_subnet.dev"; then
+            terraform import module.network.azurerm_subnet.dev /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/cst8918-final-project-group-1/providers/Microsoft.Network/virtualNetworks/cst8918-vnet/subnets/dev-subnet
+          fi
+          
+          if ! check_resource "module.network.azurerm_subnet.admin"; then
+            terraform import module.network.azurerm_subnet.admin /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/cst8918-final-project-group-1/providers/Microsoft.Network/virtualNetworks/cst8918-vnet/subnets/admin-subnet
+          fi
+          
+          if ! check_resource "module.aks.azurerm_kubernetes_cluster.main"; then
+            terraform import module.aks.azurerm_kubernetes_cluster.main /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/cst8918-final-project-group-1/providers/Microsoft.ContainerService/managedClusters/cst8918-aks-test
+          fi
+          
+          if ! check_resource "module.app.azurerm_redis_cache.main"; then
+            terraform import module.app.azurerm_redis_cache.main /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/cst8918-final-project-group-1/providers/Microsoft.Cache/redis/cst8918-redis-test
+          fi
+          
+          if ! check_resource "module.app.azurerm_container_registry.main"; then
+            terraform import module.app.azurerm_container_registry.main /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/cst8918-final-project-group-1/providers/Microsoft.ContainerRegistry/registries/cst8918acr62d8c5b4
+          fi
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+      - name: Apply Infrastructure
+        run: |
+          cd terraform/environments/test
+          # Apply all resources except Kubernetes resources
+          terraform apply -target=module.network -target=module.aks -target=module.app.azurerm_redis_cache.main -target=module.app.azurerm_container_registry.main -auto-approve
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+      - name: Get AKS Credentials
+        run: |
+          az aks get-credentials --resource-group cst8918-final-project-group-1 --name cst8918-aks-test --overwrite-existing
+
+      - name: Handle Kubernetes Resources
+        run: |
+          cd terraform/environments/test
+          
+          # Check and import namespace
+          if kubectl get namespace weather-app >/dev/null 2>&1; then
+            if ! terraform state list | grep -q "module.app.kubernetes_namespace.weather"; then
+              terraform import module.app.kubernetes_namespace.weather weather-app
+            fi
+          fi
+          
+          # Check and import service
+          if kubectl get service weather-app -n weather-app >/dev/null 2>&1; then
+            if ! terraform state list | grep -q "module.app.kubernetes_service.weather"; then
+              terraform import module.app.kubernetes_service.weather weather-app/weather-app
+            fi
+          fi
+          
+          # Check and import secret
+          if kubectl get secret acr-auth -n weather-app >/dev/null 2>&1; then
+            if ! terraform state list | grep -q "module.app.kubernetes_secret.acr"; then
+              terraform import module.app.kubernetes_secret.acr weather-app/acr-auth
+            fi
+          fi
+          
+          # Check and import deployment
+          if kubectl get deployment weather-app -n weather-app >/dev/null 2>&1; then
+            if ! terraform state list | grep -q "module.app.kubernetes_deployment.weather"; then
+              terraform import module.app.kubernetes_deployment.weather weather-app/weather-app
+            fi
+          fi
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+      - name: Apply Kubernetes Resources
+        run: |
+          cd terraform/environments/test
+          # First, apply namespace and secret
+          terraform apply -target=module.app.kubernetes_namespace.weather \
+                        -target=module.app.kubernetes_secret.acr \
+                        -auto-approve
+          
+          # Then apply service and deployment
+          terraform apply -target=module.app.kubernetes_service.weather \
+                        -target=module.app.kubernetes_deployment.weather \
+                        -auto-approve
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }} 
