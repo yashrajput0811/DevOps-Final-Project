@@ -12,8 +12,16 @@ This project implements Infrastructure as Code (IaC) using Terraform to deploy a
 - Multi-environment setup (test and production)
 
 ## Team Members
-- [Yash Rajput](https://github.com/yashrajput0811) - Infrastructure and DevOps
-- [Wats0358](https://github.com/wats0358) - Application Development and Testing
+- [Yash Rajput](https://github.com/yashrajput0811) - Infrastructure and DevOps Lead (AKS, Pipeline Configuration)
+- [Wats0358](https://github.com/wats0358) - Security and CI/CD Pipeline Engineer
+- [Meinai Otoko](https://github.com/meinai-otoko) - Kubernetes Configuration Specialist
+- [Jatin Hooda](https://github.com/jatinhooda) - Documentation and Project Setup
+
+## Key Contributions
+- **Yash Rajput**: Led infrastructure setup, AKS configuration, and pipeline implementation
+- **Wats0358**: Enhanced AKS security, implemented static analysis, and CI/CD pipeline improvements
+- **Meinai Otoko**: Kubernetes configuration, Redis Cache setup, and AKS monitoring
+- **Jatin Hooda**: Initial project setup and documentation
 
 ## Infrastructure Components
 - **Azure Kubernetes Service (AKS)**
