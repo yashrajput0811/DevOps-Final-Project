@@ -16,4 +16,4 @@ module "app" {
   resource_group_name = "cst8918-final-project-group-1"
   location           = "eastus"
   environment        = "test"
-} 
+} # Added Kubernetes configuration
