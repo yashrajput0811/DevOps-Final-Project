@@ -37,14 +37,15 @@ resource "azurerm_kubernetes_cluster" "main" {
     service_cidr   = "10.0.0.0/16"
   }
 
-  oms_agent {
-    log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
+  azure_policy_enabled = true
+
+  monitor_metrics {
+    annotations_allowed = ["*"]
+    labels_allowed     = ["*"]
   }
 
-  azure_policy_enabled = true
-  
   microsoft_defender {
-    enabled = true
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
   }
 
   key_vault_secrets_provider {
