@@ -9,8 +9,6 @@ on:
 env:
   ACR_NAME: cst8918acr62d8c5b4
   ACR_LOGIN_SERVER: cst8918acr62d8c5b4.azurecr.io
-  TEST_ENVIRONMENT: test
-  PROD_ENVIRONMENT: prod
 
 jobs:
   build-and-test:
@@ -66,7 +64,7 @@ jobs:
   deploy-test:
     needs: build-and-push
     runs-on: ubuntu-latest
-    environment: ${{ env.TEST_ENVIRONMENT }}
+    environment: test
     steps:
     - uses: actions/checkout@v3
     
@@ -77,8 +75,8 @@ jobs:
         
     - name: Deploy to Test
       run: |
-        chmod +x deploy-test.sh
-        ./deploy-test.sh
+        chmod +x scripts/deploy-test.sh
+        ./scripts/deploy-test.sh
         
     - name: Run integration tests
       run: |
@@ -89,7 +87,7 @@ jobs:
     needs: deploy-test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: ${{ env.PROD_ENVIRONMENT }}
+    environment: prod
     steps:
     - uses: actions/checkout@v3
     
@@ -100,17 +98,16 @@ jobs:
         
     - name: Deploy to Production
       run: |
-        chmod +x deploy-prod.sh
-        ./deploy-prod.sh
+        chmod +x scripts/deploy-prod.sh
+        ./scripts/deploy-prod.sh
         
     - name: Verify deployment
       run: |
-        # Add health check script
+        chmod +x scripts/verify-deployment.sh
         ./scripts/verify-deployment.sh
         
     - name: Rollback on failure
       if: failure()
       run: |
-        # Add rollback script
-        ./scripts/rollback.sh # Updated CI/CD pipeline
-# Updated CI/CD pipeline
+        chmod +x scripts/rollback.sh
+        ./scripts/rollback.sh
