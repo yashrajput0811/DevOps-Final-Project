@@ -18,11 +18,20 @@ provider "azurerm" {
   features {}
 }
 
+resource "azurerm_resource_group" "main" {
+  name     = "cst8918-final-project-group-1"
+  location = "eastus"
+  
+  tags = {
+    environment = var.environment
+  }
+}
+
 module "network" {
   source = "../../modules/network"
 
-  resource_group_name = "cst8918-final-project-group-1"
-  location           = "eastus"
+  resource_group_name = azurerm_resource_group.main.name
+  location           = azurerm_resource_group.main.location
 }
 
 module "aks" {
