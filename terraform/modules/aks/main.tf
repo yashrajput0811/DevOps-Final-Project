@@ -13,6 +13,10 @@ resource "azurerm_log_analytics_workspace" "main" {
   resource_group_name = var.resource_group_name
   sku                = "PerGB2018"
   retention_in_days   = 30
+
+  tags = {
+    Environment = var.environment
+  }
 }
 
 resource "azurerm_kubernetes_cluster" "main" {
@@ -22,16 +26,21 @@ resource "azurerm_kubernetes_cluster" "main" {
   dns_prefix         = var.cluster_name
   kubernetes_version = var.kubernetes_version
 
+  api_server_authorized_ip_ranges = var.authorized_ip_ranges
+
   default_node_pool {
     name                = "default"
-    node_count          = var.node_count
-    vm_size            = "Standard_B2s"
+    node_count         = var.node_count
+    vm_size            = "Standard_D2_v2"
+    os_disk_size_gb    = 30
     enable_auto_scaling = true
     min_count          = 1
     max_count          = 3
-    os_disk_size_gb    = 30
-    type               = "VirtualMachineScaleSets"
     vnet_subnet_id     = var.subnet_id
+    
+    tags = {
+      Environment = var.environment
+    }
   }
 
   identity {
@@ -42,10 +51,10 @@ resource "azurerm_kubernetes_cluster" "main" {
   azure_policy_enabled = true
 
   network_profile {
-    network_plugin = "azure"
-    network_policy = "azure"
-    dns_service_ip = "10.0.0.10"
-    service_cidr   = "10.0.0.0/16"
+    network_plugin    = "azure"
+    network_policy    = "calico"
+    load_balancer_sku = "standard"
+    outbound_type     = "loadBalancer"
   }
 
   oms_agent {
@@ -53,11 +62,28 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   key_vault_secrets_provider {
-    secret_rotation_enabled = true
+    secret_rotation_enabled  = true
+    secret_rotation_interval = "2m"
+  }
+
+  maintenance_window {
+    allowed {
+      day   = "Sunday"
+      hours = [0, 1, 2]
+    }
+  }
+
+  auto_scaler_profile {
+    balance_similar_node_groups = true
+    max_graceful_termination_sec = 600
+    scale_down_delay_after_add = "10m"
+    scale_down_unneeded = "10m"
   }
 
   tags = {
     Environment = var.environment
+    ManagedBy   = "Terraform"
+    Owner       = "Yash"
   }
 }
 

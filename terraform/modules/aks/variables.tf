@@ -39,4 +39,10 @@ variable "kubernetes_version" {
 variable "subnet_id" {
   description = "The ID of the subnet where the AKS cluster will be deployed"
   type        = string
+}
+
+variable "authorized_ip_ranges" {
+  description = "List of authorized IP ranges for API server access"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]  # Default to all IPs, should be restricted in production
 } 
