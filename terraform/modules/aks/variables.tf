@@ -1,32 +1,42 @@
 variable "cluster_name" {
-  description = "Name of the AKS cluster"
-  type        = string
-}
-
-variable "resource_group_name" {
-  description = "Name of the resource group"
+  description = "The name of the AKS cluster"
   type        = string
 }
 
 variable "location" {
-  description = "Azure region where resources will be created"
+  description = "The location where the AKS cluster will be created"
   type        = string
-  default     = "eastus"
+}
+
+variable "resource_group_name" {
+  description = "The name of the resource group"
+  type        = string
 }
 
 variable "node_count" {
-  description = "Number of nodes in the default node pool"
+  description = "The initial number of nodes in the AKS cluster"
   type        = number
   default     = 1
 }
 
 variable "environment" {
-  description = "Environment name (dev, test, prod)"
+  description = "The environment (e.g., dev, test, prod)"
   type        = string
 }
 
 variable "acr_id" {
-  description = "ID of the Azure Container Registry"
+  description = "The ID of the Azure Container Registry"
   type        = string
   default     = null
+}
+
+variable "kubernetes_version" {
+  description = "The version of Kubernetes to use"
+  type        = string
+  default     = "1.25.6"
+}
+
+variable "subnet_id" {
+  description = "The ID of the subnet where the AKS cluster will be deployed"
+  type        = string
 } 
