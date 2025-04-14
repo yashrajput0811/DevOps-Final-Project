@@ -44,9 +44,12 @@ module "aks" {
   kubernetes_version = "1.26.3"
   node_count        = 2
   subnet_id         = module.network.subnet_id
+  tenant_id         = data.azurerm_client_config.current.tenant_id
 
   depends_on = [module.network]
 }
+
+data "azurerm_client_config" "current" {}
 
 module "app" {
   source = "../../modules/app"
