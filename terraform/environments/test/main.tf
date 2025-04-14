@@ -32,6 +32,7 @@ module "network" {
 
   resource_group_name = azurerm_resource_group.main.name
   location           = azurerm_resource_group.main.location
+  environment        = var.environment
 }
 
 module "aks" {
@@ -45,6 +46,7 @@ module "aks" {
   node_count        = 2
   subnet_id         = module.network.subnet_id
   tenant_id         = data.azurerm_client_config.current.tenant_id
+  ssh_public_key    = ""
 
   depends_on = [module.network]
 }
