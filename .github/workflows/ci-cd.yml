@@ -112,4 +112,4 @@ jobs:
       if: failure()
       run: |
         # Add rollback script
-        ./scripts/rollback.sh 
+        ./scripts/rollback.sh # Updated CI/CD pipeline
