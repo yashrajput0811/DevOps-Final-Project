@@ -71,21 +71,15 @@ module "network" {
 module "aks" {
   source = "../../modules/aks"
 
-  cluster_name        = "cst8918-aks-prod"
-  resource_group_name = module.network.resource_group_name
-  location           = "eastus"
-  environment        = "prod"
-  
-  # Production-specific AKS settings
-  node_count         = 3
-  node_size          = "Standard_D4s_v3"
-  enable_auto_scaling = true
-  min_count          = 3
-  max_count          = 10
-  
-  # Enable monitoring and logging
-  enable_log_analytics = true
-  log_analytics_workspace_id = module.monitoring.log_analytics_workspace_id
+  resource_group_name = azurerm_resource_group.main.name
+  location           = azurerm_resource_group.main.location
+  environment        = var.environment
+  cluster_name       = "cst8918-aks-prod"
+  kubernetes_version = "1.26.3"  # Updated to supported version
+  node_count        = 2  # Production uses 2 nodes for high availability
+  subnet_id         = module.network.subnet_id
+
+  depends_on = [module.network]
 }
 
 module "monitoring" {

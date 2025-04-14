@@ -28,10 +28,13 @@ module "network" {
 module "aks" {
   source = "../../modules/aks"
 
-  cluster_name         = "cst8918-aks-test"
-  resource_group_name  = module.network.resource_group_name
-  location            = "eastus"
-  node_count          = 1
-  environment         = "test"
-  subnet_id           = module.network.subnet_id
+  resource_group_name = azurerm_resource_group.main.name
+  location           = azurerm_resource_group.main.location
+  environment        = var.environment
+  cluster_name       = "cst8918-aks-test"
+  kubernetes_version = "1.26.3"
+  node_count        = 1
+  subnet_id         = module.network.subnet_id
+
+  depends_on = [module.network]
 } 

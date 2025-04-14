@@ -22,6 +22,11 @@ resource "azurerm_storage_account" "tfstate" {
   location                 = azurerm_resource_group.tfstate.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  min_tls_version         = "TLS1_2"
+
+  tags = {
+    environment = "backend"
+  }
 }
 
 resource "azurerm_storage_container" "tfstate" {
