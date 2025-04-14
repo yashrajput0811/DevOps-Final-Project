@@ -16,4 +16,9 @@ output "subnet_ids" {
     dev    = azurerm_subnet.dev.id
     admin  = azurerm_subnet.admin.id
   }
+}
+
+output "subnet_id" {
+  description = "ID of the test subnet"
+  value       = azurerm_subnet.test.id
 } 

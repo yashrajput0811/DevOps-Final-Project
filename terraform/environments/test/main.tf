@@ -33,4 +33,5 @@ module "aks" {
   location            = "eastus"
   node_count          = 1
   environment         = "test"
+  subnet_id           = module.network.subnet_id
 } 
