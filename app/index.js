@@ -1,3 +1,4 @@
+// Weather App - A simple weather service with Redis caching
 const express = require('express');
 const redis = require('redis');
 const axios = require('axios');
