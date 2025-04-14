@@ -33,10 +33,27 @@ variable "acr_id" {
 variable "kubernetes_version" {
   description = "The version of Kubernetes to use"
   type        = string
-  default     = "1.25.6"
+  default     = "1.26.3"
 }
 
 variable "subnet_id" {
   description = "The ID of the subnet where the AKS cluster will be deployed"
   type        = string
+}
+
+variable "ssh_public_key" {
+  description = "The SSH public key for Linux nodes"
+  type        = string
+  default     = ""
+}
+
+variable "tenant_id" {
+  description = "The Azure AD tenant ID"
+  type        = string
+}
+
+variable "tags" {
+  description = "Additional tags for the AKS cluster"
+  type        = map(string)
+  default     = {}
 } 
