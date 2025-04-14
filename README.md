@@ -60,3 +60,4 @@ terraform destroy
 Last pipeline trigger: $(date +"%Y-%m-%d %H:%M:%S") 
 
 # Updated infrastructure documentation
+# Updated infrastructure documentation
