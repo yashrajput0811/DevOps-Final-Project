@@ -38,14 +38,15 @@ resource "azurerm_kubernetes_cluster" "main" {
     type = "SystemAssigned"
   }
 
+  role_based_access_control_enabled = true
+  azure_policy_enabled = true
+
   network_profile {
     network_plugin = "azure"
     network_policy = "azure"
     dns_service_ip = "10.0.0.10"
     service_cidr   = "10.0.0.0/16"
   }
-
-  azure_policy_enabled = true
 
   oms_agent {
     log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
