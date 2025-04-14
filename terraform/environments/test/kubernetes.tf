@@ -17,3 +17,4 @@ module "app" {
   location           = "eastus"
   environment        = "test"
 } # Added Kubernetes configuration
+# Added Kubernetes configuration
