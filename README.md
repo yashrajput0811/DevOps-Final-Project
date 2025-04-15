@@ -14,13 +14,13 @@ This project implements Infrastructure as Code (IaC) using Terraform to deploy a
 ## Team Members
 - [Yash Rajput](https://github.com/yashrajput0811) - Infrastructure and DevOps Lead (AKS, Pipeline Configuration)
 - [Caleb Watson-Danis](https://github.com/wats0358) - Security and CI/CD Pipeline Engineer
-- [Meinai Otoko](https://github.com/meinai-otoko) - Kubernetes Configuration Specialist
+- [Pascal KC](https://github.com/meinai-otoko) - Kubernetes Configuration Specialist
 - [Jatin Hooda](https://github.com/jatinhooda) - Documentation and Project Setup
 
 ## Key Contributions
 - **Yash Rajput**: Led infrastructure setup, AKS configuration, and pipeline implementation
-- **Wats0358**: Enhanced AKS security, implemented static analysis, and CI/CD pipeline improvements
-- **Meinai Otoko**: Kubernetes configuration, Redis Cache setup, and AKS monitoring
+- **Caleb Watson-Danis**: Enhanced AKS security, implemented static analysis, and CI/CD pipeline improvements
+- **Pascal KC**: Kubernetes configuration, Redis Cache setup, and AKS monitoring
 - **Jatin Hooda**: Initial project setup and documentation
 
 ## Infrastructure Components
@@ -41,7 +41,7 @@ This project implements Infrastructure as Code (IaC) using Terraform to deploy a
 ## Project Structure
 ```
 .
-├── app/                 # Weather application source code
+├── app/                # Weather application source code
 │   ├── index.js        # Main application file
 │   ├── test.js         # Application tests
 │   └── Dockerfile      # Container configuration
