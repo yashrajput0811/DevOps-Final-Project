@@ -13,7 +13,7 @@ This project implements Infrastructure as Code (IaC) using Terraform to deploy a
 
 ## Team Members
 - [Yash Rajput](https://github.com/yashrajput0811) - Infrastructure and DevOps Lead (AKS, Pipeline Configuration)
-- [Wats0358](https://github.com/wats0358) - Security and CI/CD Pipeline Engineer
+- [Caleb Watson-Danis](https://github.com/wats0358) - Security and CI/CD Pipeline Engineer
 - [Meinai Otoko](https://github.com/meinai-otoko) - Kubernetes Configuration Specialist
 - [Jatin Hooda](https://github.com/jatinhooda) - Documentation and Project Setup
 
@@ -112,5 +112,19 @@ terraform destroy
 cd ../prod
 terraform destroy
 ```
+
+## Completed Actions workflows Screenshots
+
+1. Deploy Application
+
+![Deploy Application](./screenshots/deployapp.png)
+
+2. Docker Build and Push
+
+![Docker Build & Push](./screenshots/dockerbp.png)
+
+3. Terraform Apply
+
+![Terraform Apply](./screenshots/terraformapply.png)
 
 Last Updated: $(date +"%Y-%m-%d %H:%M:%S")
